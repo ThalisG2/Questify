@@ -1,8 +1,7 @@
 /**
  * QUESTIFTY — IntroScreen.js
  * Tela de boas-vindas Minimalista (Fundo Branco, Ícone Flutuante).
- * Navegação configurada:
- * Ambos os botões executam → navigation.navigate('HomeScreen')
+ * Navegação direta ativada: Clicou, entrou na HomeScreen.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -10,11 +9,9 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   Animated,
   StatusBar,
   Platform,
-  Dimensions,
   Pressable,
   Image,
 } from 'react-native';
@@ -28,12 +25,15 @@ const C = {
   onSurfaceVariant:     '#434846',
   tertiary:             '#855314',
   pixelShadow:          '#131e19',
-  white:                '#ffffff', // Fundo Branco
+  white:                '#ffffff', 
 };
 
 // Sistema de Grade (Múltiplos de 4px)
 const U = (n) => n * 4;
-const { width: SCREEN_W } = Dimensions.get('window');
+
+// Cálculo de espaçamento seguro nativo 
+const TOP_SPACE = Platform.OS === 'ios' ? 48 : (StatusBar.currentHeight || 0);
+const BOTTOM_SPACE = Platform.OS === 'ios' ? 28 : U(4);
 
 // ─────────────────────────────────────────────
 // COMPONENTE: BOTÃO PIXELADO ANIMADO 
@@ -112,7 +112,7 @@ function CornerPixels() {
 }
 
 // ─────────────────────────────────────────────
-// LOGO DO GOOGLE RUSTIC
+// LOGO DO GOOGLE EM PIXEL ART
 // ─────────────────────────────────────────────
 function GoogleLogoPixel() {
   return (
@@ -126,7 +126,7 @@ function GoogleLogoPixel() {
 }
 
 // ─────────────────────────────────────────────
-// TELA PRINCIPAL
+// TELA PRINCIPAL (INTRO SCREEN)
 // ─────────────────────────────────────────────
 export default function IntroScreen({ navigation }) {
 
@@ -136,38 +136,18 @@ export default function IntroScreen({ navigation }) {
   const floatAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Entrada escalonada
+    // Animação de entrada
     Animated.stagger(150, [
-      Animated.timing(titleAnim, {
-        toValue: 1,
-        duration: 450,
-        useNativeDriver: true,
-      }),
-      Animated.timing(iconAnim, {
-        toValue: 1,
-        duration: 450,
-        useNativeDriver: true,
-      }),
-      Animated.timing(btnsAnim, {
-        toValue: 1,
-        duration: 450,
-        useNativeDriver: true,
-      }),
+      Animated.timing(titleAnim, { toValue: 1, duration: 450, useNativeDriver: true }),
+      Animated.timing(iconAnim, { toValue: 1, duration: 450, useNativeDriver: true }),
+      Animated.timing(btnsAnim, { toValue: 1, duration: 450, useNativeDriver: true }),
     ]).start();
 
-    // Loop infinito de flutuação (efeito voando)
+    // Loop de flutuação
     const floatLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: -12, // Aumentei um pouco a altura do voo para dar mais destaque
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
+        Animated.timing(floatAnim, { toValue: -12, duration: 1200, useNativeDriver: true }),
+        Animated.timing(floatAnim, { toValue: 0, duration: 1200, useNativeDriver: true }),
       ])
     );
     floatLoop.start();
@@ -177,42 +157,38 @@ export default function IntroScreen({ navigation }) {
 
   const makeEntrance = (anim, yStart = 20) => ({
     opacity: anim,
-    transform: [{
-      translateY: anim.interpolate({
-        inputRange:  [0, 1],
-        outputRange: [yStart, 0],
-      }),
-    }],
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [yStart, 0] }) }],
   });
 
+  // AÇÃO DIRETA DE NAVEGAÇÃO
   const handleNavigation = () => {
     navigation.navigate('HomeScreen');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.white} translucent={false} />
+    <View style={[styles.container, { paddingTop: TOP_SPACE, paddingBottom: BOTTOM_SPACE }]}>
+      <StatusBar barStyle="dark-content" backgroundColor={C.white} translucent={true} />
 
       <CornerPixels />
 
-      {/* SEÇÃO DO CABEÇALHO */}
+      {/* CABEÇALHO */}
       <Animated.View style={[styles.titleArea, makeEntrance(titleAnim, 16)]}>
         <Text style={styles.appTitle}>QUESTIFTY !!!</Text>
         <Text style={styles.appTagline}>ESTUDE. EVOLUA. CONQUISTE.</Text>
       </Animated.View>
 
-      {/* ÍCONE CENTRAL VOANDO (Sem fundo de card) */}
+      {/* ÍCONE FLUTUANTE */}
       <Animated.View style={[styles.iconContainer, makeEntrance(iconAnim, 28)]}>
         <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
           <Image
-            source={require('../assets/icone.png')} // Caminho do seu ícone
+            source={require('../assets/icone.png')}
             style={styles.floatingIcon}
             resizeMode="contain"
           />
         </Animated.View>
       </Animated.View>
 
-      {/* BLOCO DE BOTÕES DE ENTRADA */}
+      {/* BOTÕES */}
       <Animated.View style={[styles.buttonsArea, makeEntrance(btnsAnim, 20)]}>
         <PixelButton
           label="ENTRAR COM GOOGLE"
@@ -226,19 +202,19 @@ export default function IntroScreen({ navigation }) {
           <View style={styles.guestUnderline} />
         </Pressable>
       </Animated.View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 // ─────────────────────────────────────────────
-// ESTILOS ESTÁTICOS
+// ESTILOS
 // ─────────────────────────────────────────────
 const FONT_PIXEL = Platform.OS === 'ios' ? 'Courier New' : 'monospace';
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
-    backgroundColor: C.white, // Fundo alterado para branco puro
+    backgroundColor: C.white,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: U(6),
@@ -283,7 +259,7 @@ const styles = StyleSheet.create({
     marginTop: U(4),
   },
   floatingIcon: {
-    width: 110, // Aumentei levemente o ícone para ele preencher bem o espaço
+    width: 110,
     height: 110, 
   },
 
@@ -314,7 +290,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 4,
     borderColor: C.pixelShadow,
-    backgroundColor: C.white, // Botão branco com borda forte
+    backgroundColor: C.white,
   },
   btnLabel: {
     fontFamily: FONT_PIXEL,

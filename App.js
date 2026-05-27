@@ -1,20 +1,22 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+// Importe as suas telas (ajuste o caminho da pasta se necessário)
+import HomeScreen from './Screens/HomeScreen';
+import IntroScreen from './Screens/IntroScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      {/* headerShown: false tira aquela barra com o nome da tela no topo */}
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {/* A primeira tela da lista é a que abre primeiro */}
+        <Stack.Screen name="IntroScreen" component={IntroScreen} />
+        <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
